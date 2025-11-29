@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["nativeDistinct", "relationJoins"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Users {
+  id                 String               @id
+  name               String
+  email              String
+  emailVerified      Boolean              @default(false)
+  image              String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  sessions           Sessions[]
+  accounts           Accounts[]
+  workflows          Workflows[]
+  integrations       Integrations[]
+  workflowExecutions WorkflowExecutions[]
+
+  @@unique([email])
+  @@map("users")
+}
+
+model Sessions {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  users     Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Accounts {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  users                 Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Verifications {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verifications")
+}
+
+model Workflows {
+  id                 String               @id @default(nanoid())
+  name               String
+  nodes              Json
+  edges              Json
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  workflowExecutions WorkflowExecutions[]
+
+  userId String
+  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("workflows")
+}
+
+model Integrations {
+  id        String   @id @default(nanoid())
+  name      String
+  type      String // validated on application level
+  config    Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  ERROR
+  CANCELLED
+}
+
+model WorkflowExecutions {
+  id             String           @id @default(nanoid())
+  status         ExecutionStatus  @default(RUNNING)
+  duration       Int?
+  startedAt      DateTime         @default(now())
+  completedAt    DateTime?
+  nodeExecutions NodeExecutions[]
+
+  userId     String
+  user       Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workflowId String
+  workflow   Workflows @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model NodeExecutions {
+  id          String          @id @default(nanoid())
+  nodeId      String
+  nodeName    String
+  status      ExecutionStatus @default(PENDING)
+  input       Json
+  output      Json
+  error       String?
+  duration    Int?
+  startedAt   DateTime        @default(now())
+  completedAt DateTime?
+
+  executionId String
+  execution   WorkflowExecutions @relation(fields: [executionId], references: [id], onDelete: Cascade)
+}
