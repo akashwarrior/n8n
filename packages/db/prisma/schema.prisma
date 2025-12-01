@@ -15,18 +15,16 @@ datasource db {
 }
 
 model Users {
-  id                 String               @id
-  name               String
-  email              String
-  emailVerified      Boolean              @default(false)
-  image              String?
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  sessions           Sessions[]
-  accounts           Accounts[]
-  workflows          Workflows[]
-  integrations       Integrations[]
-  workflowExecutions WorkflowExecutions[]
+  id            String     @id
+  name          String
+  email         String
+  emailVerified Boolean    @default(false)
+  image         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  sessions      Sessions[]
+  accounts      Accounts[]
+  projects      Projects[]
 
   @@unique([email])
   @@map("users")
@@ -80,23 +78,40 @@ model Verifications {
   @@map("verifications")
 }
 
-model Workflows {
-  id                 String               @id @default(nanoid())
-  name               String
-  nodes              Json
-  edges              Json
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  workflowExecutions WorkflowExecutions[]
+model Projects {
+  id          String               @id @default(nanoid())
+  name        String
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  workflows   Workflows[]
+  credentials Credentials[]
+  executions  WorkflowExecutions[]
 
   userId String
   user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@map("projects")
+}
+
+model Workflows {
+  id         String               @id @default(nanoid())
+  name       String
+  nodes      Json
+  edges      Json
+  isActive   Boolean              @default(true)
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+  executions WorkflowExecutions[]
+
+  projectId String
+  project   Projects @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
   @@map("workflows")
 }
 
-model Integrations {
+model Credentials {
   id        String   @id @default(nanoid())
   name      String
   type      String // validated on application level
@@ -104,10 +119,11 @@ model Integrations {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userId String
-  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String
+  project   Projects @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
+  @@index([projectId])
+  @@map("credentials")
 }
 
 enum ExecutionStatus {
@@ -126,18 +142,19 @@ model WorkflowExecutions {
   completedAt    DateTime?
   nodeExecutions NodeExecutions[]
 
-  userId     String
-  user       Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
   workflowId String
   workflow   Workflows @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  projectId  String
+  project    Projects  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
+  @@index([workflowId, projectId])
+  @@map("workflow_executions")
 }
 
 model NodeExecutions {
   id          String          @id @default(nanoid())
   nodeId      String
-  nodeName    String
+  nodeType    String
   status      ExecutionStatus @default(PENDING)
   input       Json
   output      Json
@@ -148,4 +165,7 @@ model NodeExecutions {
 
   executionId String
   execution   WorkflowExecutions @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  @@index([executionId])
+  @@map("node_executions")
 }
