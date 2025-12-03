@@ -135,7 +135,7 @@ enum ExecutionStatus {
 }
 
 model WorkflowExecutions {
-  id             String           @id @default(nanoid())
+  id             Int           @id @default(autoincrement())
   status         ExecutionStatus  @default(RUNNING)
   duration       Int?
   startedAt      DateTime         @default(now())
@@ -152,7 +152,7 @@ model WorkflowExecutions {
 }
 
 model NodeExecutions {
-  id          String          @id @default(nanoid())
+  id          Int          @id @default(autoincrement())
   nodeId      String
   nodeType    String
   status      ExecutionStatus @default(PENDING)
@@ -163,7 +163,7 @@ model NodeExecutions {
   startedAt   DateTime        @default(now())
   completedAt DateTime?
 
-  executionId String
+  executionId Int
   execution   WorkflowExecutions @relation(fields: [executionId], references: [id], onDelete: Cascade)
 
   @@index([executionId])
