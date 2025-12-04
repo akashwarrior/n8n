@@ -4,30 +4,51 @@ import { nextCookies } from "better-auth/next-js";
 import { prisma } from "@n8n/db";
 
 export const auth = betterAuth({
-    database: prismaAdapter(prisma, {
-        provider: "postgresql",
-        usePlural: true,
-        transaction: true,
-    }),
+  secret: process.env.BETTER_AUTH_SECRET,
+  baseURL: process.env.NEXT_PUBLIC_APP_URL,
 
-    emailAndPassword: {
-        enabled: true,
+  database: prismaAdapter(prisma, {
+    provider: "postgresql",
+    usePlural: true,
+    transaction: true,
+  }),
+
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: false,
+    autoSignIn: true,
+  },
+
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      accessType: "offline",
+      prompt: "select_account consent",
     },
+  },
 
-    socialProviders: {
-        github: {
-            clientId: process.env.GITHUB_CLIENT_ID as string,
-            clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+  databaseHooks: {
+    user: {
+      create: {
+        after: async ({ id }) => {
+          try {
+            await prisma.projects.create({
+              data: {
+                name: "Personal",
+                userId: id,
+              },
+            });
+          } catch (error) {
+            console.error("Error creating project", error);
+            throw error;
+          }
         },
-        google: {
-            clientId: process.env.GOOGLE_CLIENT_ID as string,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-            accessType: "offline",
-            prompt: "select_account consent",
-        },
+      },
     },
+  },
 
-    experimental: { joins: true },
+  experimental: { joins: true },
 
-    plugins: [nextCookies()]
+  plugins: [nextCookies()],
 });
