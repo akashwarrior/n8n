@@ -1,7 +1,7 @@
 "use client";
 
 import useSWRInfinite from "swr/infinite";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   buildPaginatedParams,
   keyBuilder,
@@ -54,6 +54,12 @@ export function usePaginatedList<T>({
       setSize((size) => size + 1);
     }
   };
+
+  useEffect(() => {
+    if (data && activePage - 1 >= data.length) {
+      loadMore();
+    }
+  }, [activePage]);
 
   return {
     items: data ?? [],

@@ -1,9 +1,9 @@
 "use client ";
 
 import { useRef, useState } from "react";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Input } from "./ui/input";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +23,6 @@ type RenameDialogProps = {
   renameState: RenameState | null;
   setIsOpen: (open: boolean) => void;
   onRename: (data: RenameState) => Promise<any>;
-  onSuccess: (data: RenameState) => Promise<void>;
 };
 
 export function RenameDialog({
@@ -31,7 +30,6 @@ export function RenameDialog({
   renameState,
   setIsOpen,
   onRename,
-  onSuccess,
 }: RenameDialogProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -58,10 +56,7 @@ export function RenameDialog({
 
     toast.promise(renamePromise, {
       loading: `Renaming ${title}...`,
-      async success() {
-        await onSuccess(data);
-        return `${title} renamed successfully`;
-      },
+      success: `${title} renamed successfully!`,
       error: `Failed to rename ${title}`,
       finally: () => {
         setLoading(false);

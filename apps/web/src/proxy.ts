@@ -13,7 +13,9 @@ export async function proxy(req: NextRequest) {
   if (!session) {
     const isApi = pathname.startsWith("/api/");
     if (!isApi) {
-      return NextResponse.redirect(new URL("/auth", req.nextUrl));
+      return NextResponse.redirect(
+        new URL(pathname === "/" ? "/landing" : "/login", req.nextUrl),
+      );
     }
     return NextResponse.json(
       { success: false, message: "authentication failed" },
@@ -32,5 +34,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/:path*"], // TODO: Add other paths to match
+  matcher: ["/", "/api/:path*", "/projects/:path*", "/workflows/:path*"],
 };

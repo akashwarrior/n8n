@@ -11,6 +11,7 @@ import { unstable_serialize } from "swr/infinite";
 import { RenameDialog, RenameState } from "../rename-dialog";
 import type { Projects, Workflows } from "@n8n/db";
 import { usePaginatedList } from "@/hooks/use-paginated-list";
+import { Skeleton } from "@/components/ui/skeleton";
 import { keyBuilder } from "@/lib/pagination";
 import {
   IconDots,
@@ -75,7 +76,7 @@ export function NavProjects() {
   };
 
   const handleDelete = async (projectId: string) => {
-    const deleteProjectResponse = api.projects.delete({
+    const deleteProjectResponse = api.project.delete({
       projectId: projectId,
     });
 
@@ -142,6 +143,14 @@ export function NavProjects() {
           </SidebarMenuItem>
         ))}
 
+        {validating && (
+          <div className="flex flex-col gap-2 p-1">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <Skeleton key={index} className="w-full h-8 rounded-lg" />
+            ))}
+          </div>
+        )}
+
         {hasMore && !validating && (
           <motion.div className="h-4" onViewportEnter={loadMore} />
         )}
@@ -150,8 +159,10 @@ export function NavProjects() {
       <RenameDialog
         title="Project"
         renameState={renameState}
-        onRename={api.projects.update}
-        onSuccess={handleRenameSuccess}
+        onRename={async (data) => {
+          await api.project.update(data);
+          await handleRenameSuccess(data);
+        }}
         setIsOpen={(open) => !open && setRenameState(null)}
       />
     </SidebarGroup>

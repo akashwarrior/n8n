@@ -1,7 +1,7 @@
-import type { WorkflowCreateInput } from "@/lib/api-client";
-import type { NextRequest } from "next/server";
-import { prisma } from "@n8n/db";
+import { credentialsCreateInput } from "@/lib/api-client";
 import { PaginatedParams } from "@/lib/pagination";
+import { prisma } from "@n8n/db";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,14 +11,14 @@ export async function GET(req: NextRequest) {
       skip = 0,
       orderBy = "desc",
       orderByField = "createdAt",
-      projectId = null,
+      projectId,
     } = Object.fromEntries(req.nextUrl.searchParams.entries()) as Partial<
       PaginatedParams & { projectId: string }
     >;
 
     const userId = req.headers.get("x-user-id") as string;
 
-    const workflows = await prisma.workflows.findMany({
+    const credentials = await prisma.credentials.findMany({
       where: {
         ...(query && { name: { contains: query, mode: "insensitive" } }),
         ...(projectId && { projectId }),
@@ -40,24 +40,24 @@ export async function GET(req: NextRequest) {
         [orderByField]: orderBy,
       },
     });
-
-    return Response.json(workflows);
+    return NextResponse.json(credentials);
   } catch (error) {
-    console.error("Error getting workflows", error);
-    return Response.json({ error: "Failed to get workflows" }, { status: 500 });
+    console.error("Error getting credentials", error);
+    return Response.json(
+      { error: "Failed to get credentials" },
+      { status: 500 },
+    );
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const data = (await req.json()) as WorkflowCreateInput;
+    const data = (await req.json()) as credentialsCreateInput;
     const userId = req.headers.get("x-user-id") as string;
 
-    const workflow = await prisma.workflows.create({
+    const credential = await prisma.credentials.create({
       data: {
         ...data,
-        nodes: data.nodes as any, // TODO: fix this
-        edges: data.edges as any,
         projectId: undefined,
         project: {
           connect: {
@@ -68,10 +68,10 @@ export async function POST(req: Request) {
       },
     });
 
-    return Response.json(workflow);
+    return Response.json(credential);
   } catch (error) {
     return Response.json(
-      { error: "Failed to create workflow" },
+      { error: "Failed to create credential" },
       { status: 500 },
     );
   }

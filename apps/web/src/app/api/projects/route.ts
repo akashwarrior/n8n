@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     } = Object.fromEntries(
       req.nextUrl.searchParams.entries(),
     ) as Partial<PaginatedParams>;
-    
+
     const userId = req.headers.get("x-user-id") as string;
 
     const projects = await prisma.projects.findMany({

@@ -1,4 +1,6 @@
-import type { Projects, Workflows, Prisma } from "@n8n/db";
+import type { Projects, Workflows as PrismaWorkflows, Prisma } from "@n8n/db";
+import type { IntegrationType } from "@n8n/Integrations/types";
+import { WorkflowEdge, WorkflowNode } from "./workflow-store";
 
 class ApiError extends Error {
   public status: number;
@@ -20,23 +22,31 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => {});
+    const error = await response.json().catch(() => { });
     throw new ApiError(response.status, error.error || "Request failed");
   }
 
   return await response.json();
 }
 
-type workflowIdInput = { workflowId: string };
-export type WorkflowUpdateInput = Prisma.WorkflowsUpdateInput & { id: string };
-export type WorkflowCreateInput = Omit<
-  Prisma.WorkflowsCreateInput,
-  "project"
-> & { projectId: string };
+interface Workflows extends Omit<PrismaWorkflows, "nodes" | "edges"> {
+  nodes: WorkflowNode[];
+  edges: WorkflowEdge[];
+}
 
-const workflows = {
+interface WorkflowCreateType extends Omit<Prisma.WorkflowsCreateInput, "project" | "nodes" | "edges"> {
+  name: string;
+  nodes: WorkflowNode[];
+  edges: WorkflowEdge[];
+}
+
+type workflowIdInput = { id: string };
+export type WorkflowUpdateInput = Partial<Workflows> & { id: string };
+export type WorkflowCreateInput = WorkflowCreateType & { projectId: string };
+
+const workflow = {
   get: (data: workflowIdInput) =>
-    apiCall<Workflows>(`/api/workflows/${data.workflowId}`),
+    apiCall<Workflows>(`/api/workflows/${data.id}`),
 
   update: (data: WorkflowUpdateInput) =>
     apiCall<Workflows>(`/api/workflows/${data.id}`, {
@@ -45,7 +55,7 @@ const workflows = {
     }),
 
   delete: (data: workflowIdInput) =>
-    apiCall<Workflows>(`/api/workflows/${data.workflowId}`, {
+    apiCall<Workflows>(`/api/workflows/${data.id}`, {
       method: "DELETE",
     }),
 
@@ -59,8 +69,7 @@ const workflows = {
 export type projectCreateInput = Omit<Prisma.ProjectsCreateInput, "user">;
 export type projectUpdateInput = Prisma.ProjectsUpdateInput & { id: string };
 
-const projects = {
-  get: () => {},
+const project = {
   create: (data: projectCreateInput) =>
     apiCall<Projects>("/api/projects", {
       method: "POST",
@@ -77,7 +86,43 @@ const projects = {
     }),
 };
 
+export interface Credentials extends Prisma.CredentialsModel {
+  type: IntegrationType;
+  config: Record<string, string>;
+}
+
+export type credentialsCreateInput = Omit<
+  Credentials,
+  "id" | "createdAt" | "updatedAt"
+>;
+export type credentialsUpdateInput = Partial<Credentials> & {
+  id: string;
+};
+
+const credential = {
+  create: (data: credentialsCreateInput) =>
+    apiCall<Credentials>("/api/credentials", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  update: (data: credentialsUpdateInput) =>
+    apiCall<Credentials>(`/api/credentials/${data.id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  delete: (data: { credentialsId: string }) =>
+    apiCall<Credentials>(`/api/credentials/${data.credentialsId}`, {
+      method: "DELETE",
+    }),
+
+  getAll: (data: { projectId: string }) =>
+    apiCall<Credentials[]>(`/api/credentials?projectId=${data.projectId}`, {
+      method: "GET",
+    }),
+};
+
 export const api = {
-  workflows,
-  projects,
+  workflow,
+  project,
+  credential,
 };
