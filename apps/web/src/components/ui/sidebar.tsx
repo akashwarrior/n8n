@@ -63,7 +63,7 @@ function SidebarProvider({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
-        event.key.toLowerCase() === SIDEBAR_KEYBOARD_SHORTCUT &&
+        event.key?.toLowerCase() === SIDEBAR_KEYBOARD_SHORTCUT &&
         (event.metaKey || event.ctrlKey)
       ) {
         event.preventDefault();
@@ -99,7 +99,7 @@ function SidebarProvider({
             } as React.CSSProperties
           }
           className={cn(
-            "group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full",
+            "group/sidebar-wrapper flex overflow-hidden min-h-svh w-full max-h-screen",
             className,
           )}
           {...props}
@@ -121,13 +121,11 @@ function SidebarProvider({
 
 function Sidebar({
   side = "left",
-  variant = "sidebar",
   className,
   children,
   ...props
 }: React.ComponentProps<"div"> & {
   side?: "left" | "right";
-  variant?: "sidebar" | "inset";
 }) {
   const { state } = useSidebar();
 
@@ -136,7 +134,7 @@ function Sidebar({
       className="group peer text-sidebar-foreground block w-(--sidebar-width-icon) md:w-auto z-50"
       data-state={state}
       data-collapsible={state === "collapsed" ? "icon" : ""}
-      data-variant={variant}
+      data-variant="sidebar"
       data-side={side}
       data-slot="sidebar"
     >
@@ -144,10 +142,7 @@ function Sidebar({
         data-slot="sidebar-container"
         className={cn(
           "relative inset-y-0 z-10 flex h-svh w-(--sidebar-width) transition-[left,right,width] duration-100 md:duration-200 ease-linear",
-          // Adjust the padding for inset variants.
-          variant === "inset"
-            ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
-            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
+          "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
           className,
         )}
         {...props}
@@ -169,8 +164,8 @@ function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
     <main
       data-slot="sidebar-inset"
       className={cn(
-        "bg-background relative flex w-full flex-1 flex-col h-full max-h-screen overflow-y-auto",
-        "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
+        "bg-background relative flex w-full flex-1 flex-col min-h-full overflow-y-auto",
+        "flex-1 min-h-full",
         className,
       )}
       {...props}

@@ -12,6 +12,7 @@ import { ItemCard } from "./item-card";
 import { ProjectWrapper } from "./project-wrapper";
 import { api, Credentials } from "@/lib/api-client";
 import { CredentialsFormDialog } from "../credentials-form-dialog";
+import { useRouter } from "next/navigation";
 
 type CredentialsPanelProps = {
   projectId: string | null;
@@ -22,6 +23,7 @@ interface CredentialWithProject extends Credentials {
 }
 
 export function CredentialsPanel({ projectId }: CredentialsPanelProps) {
+  const router = useRouter();
   const [renameState, setRenameState] = useState<RenameState | null>(null);
   const {
     items: credentials,
@@ -70,12 +72,21 @@ export function CredentialsPanel({ projectId }: CredentialsPanelProps) {
   };
 
   const handleDelete = async (credentialId: string) => {
-    await mutate(
-      (prev) =>
-        prev?.map((page) => page.filter((cred) => cred.id !== credentialId)),
-      false,
-    );
-    toast.success("Credential deleted locally (API not yet implemented).");
+    const credentialsDeletePromise = api.credential.delete({ credentialId });
+    toast.promise(credentialsDeletePromise, {
+      loading: "Deleting credential...",
+      success: () => {
+        mutate(
+          (prev) =>
+            prev?.map((page) =>
+              page.filter((cred) => cred.id !== credentialId),
+            ),
+          false,
+        );
+        return "Credential deleted successfully.";
+      },
+      error: "Failed to delete credential.",
+    });
   };
 
   return (
@@ -102,11 +113,11 @@ export function CredentialsPanel({ projectId }: CredentialsPanelProps) {
         <ItemCard
           key={credential.id}
           title={credential.name}
-          projectId={credential.project.id}
           projectName={credential.project.name}
           onOpen={() => setSelectedCredential(credential)}
           onRename={() => setRenameState(credential)}
           onDelete={() => handleDelete(credential.id)}
+          openProject={() => router.push(`/projects/${credential.project.id}`)}
           description={[
             credential.type ?? "Credential",
             `Last updated ${intlFormatDistance(new Date(credential.updatedAt), new Date())}`,
@@ -122,7 +133,6 @@ export function CredentialsPanel({ projectId }: CredentialsPanelProps) {
           onClose={() => setSelectedCredential(null)}
           onSuccess={() => mutate()}
           credentials={selectedCredential}
-          projectId={selectedCredential.projectId}
         />
       )}
     </ProjectWrapper>

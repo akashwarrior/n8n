@@ -1,6 +1,7 @@
 import { credentialsCreateInput } from "@/lib/api-client";
 import { PaginatedParams } from "@/lib/pagination";
 import { prisma } from "@n8n/db";
+import { ProviderType } from "@n8n/actions/types";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -12,8 +13,9 @@ export async function GET(req: NextRequest) {
       orderBy = "desc",
       orderByField = "createdAt",
       projectId,
+      type,
     } = Object.fromEntries(req.nextUrl.searchParams.entries()) as Partial<
-      PaginatedParams & { projectId: string }
+      PaginatedParams & { projectId: string; type?: ProviderType }
     >;
 
     const userId = req.headers.get("x-user-id") as string;
@@ -22,6 +24,7 @@ export async function GET(req: NextRequest) {
       where: {
         ...(query && { name: { contains: query, mode: "insensitive" } }),
         ...(projectId && { projectId }),
+        ...(type && { type }),
         project: {
           userId,
         },

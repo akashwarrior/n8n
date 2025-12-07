@@ -25,9 +25,9 @@ import {
 type ItemCardProps = {
   title: string;
   status?: React.ReactNode;
-  projectId: string;
   projectName: string;
   description: string[];
+  openProject: (e: React.MouseEvent<HTMLSpanElement>) => void;
   onOpen: () => void;
   onRename: () => void;
   onDelete: () => void;
@@ -36,9 +36,9 @@ type ItemCardProps = {
 export function ItemCard({
   title,
   status,
-  projectId,
   projectName,
   description,
+  openProject,
   onOpen,
   onRename,
   onDelete,
@@ -54,9 +54,9 @@ export function ItemCard({
             </CardDescription>
           </div>
 
-          <Link href={`/projects/${projectId}`}>
-            <Badge className="rounded-md">{projectName}</Badge>
-          </Link>
+          <Badge onClick={openProject} className="rounded-md cursor-pointer">
+            {projectName}
+          </Badge>
         </div>
 
         <div className="flex flex-col-reverse sm:flex-row justify-between items-end sm:items-center gap-4 sm:gap-3">

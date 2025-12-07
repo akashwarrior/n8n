@@ -8,7 +8,7 @@ Database package for the workflow automation platform using Prisma ORM with Post
 - **Sessions** - Session management
 - **Accounts** - OAuth provider accounts
 - **Workflows** - Workflow definitions (nodes & edges as JSON)
-- **Integrations** - Third-party service configs
+- **Credentials** - Third-party service configs
 - **WorkflowExecutions** - Workflow run history
 - **NodeExecutions** - Individual node execution logs
 
@@ -28,10 +28,10 @@ Database package for the workflow automation platform using Prisma ORM with Post
 ## Usage
 
 ```typescript
-import { prisma } from '@n8n/db';
+import { prisma } from "@n8n/db";
 
 // Example: Get all workflows for a user
 const workflows = await prisma.workflows.findMany({
-  where: { userId: 'user_123' }
+  where: { userId: "user_123" },
 });
 ```

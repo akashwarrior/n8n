@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { useSetAtom } from "jotai";
 import { api } from "@/lib/api-client";
 import { useParams, useRouter } from "next/navigation";
 import { unstable_serialize } from "swr/infinite";
@@ -12,6 +13,7 @@ import { defaultParams, keyBuilder } from "@/lib/pagination";
 import type { Projects } from "@n8n/db";
 import { usePaginatedList } from "@/hooks/use-paginated-list";
 import { CredentialsFormDialog } from "./credentials-form-dialog";
+import { projectIdAtom } from "@/store/workflow-store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,9 +38,8 @@ export function CreateOptionsDropdown({
   const Comp = Slot;
   const router = useRouter();
   const { projectId: projectIdParam } = useParams<{ projectId: string }>();
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
-    null,
-  );
+  const setProjectId = useSetAtom(projectIdAtom);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleCreateProject = async () => {
     const createProjectResponse = api.project.create({
@@ -76,12 +77,7 @@ export function CreateOptionsDropdown({
       success: ({ id }) => {
         mutate(
           unstable_serialize((index) =>
-            keyBuilder(
-              index,
-              "/api/workflows",
-              defaultParams,
-              projectIdParam ? { projectId: projectIdParam } : undefined,
-            ),
+            keyBuilder(index, "/api/workflows", defaultParams, { projectId }),
           ),
         );
         router.push(`/workflows/${id}`);
@@ -97,7 +93,7 @@ export function CreateOptionsDropdown({
         <>
           <Comp
             onClick={() =>
-              handleCreateWorkflow(projectIdParam || projects.flat()[0].id)
+              handleCreateWorkflow(projectIdParam || projects[0][0].id)
             }
           >
             {createWorkflow}
@@ -133,7 +129,10 @@ export function CreateOptionsDropdown({
               {projects.flat().map((project) => (
                 <DropdownMenuItem
                   key={project.id}
-                  onClick={() => setSelectedProjectId(project.id)}
+                  onClick={() => {
+                    setDialogOpen(true);
+                    setProjectId(project.id);
+                  }}
                 >
                   {project.name}
                 </DropdownMenuItem>
@@ -147,13 +146,13 @@ export function CreateOptionsDropdown({
         </DropdownMenuItem>
       </DropdownMenuContent>
 
-      <CredentialsFormDialog
-        mode="create"
-        onClose={() => setSelectedProjectId(null)}
-        onSuccess={() => {}}
-        open={!!selectedProjectId}
-        projectId={selectedProjectId || ""}
-      />
+      {dialogOpen && (
+        <CredentialsFormDialog
+          mode="create"
+          onClose={() => setDialogOpen(false)}
+          open={dialogOpen}
+        />
+      )}
     </DropdownMenu>
   );
 }

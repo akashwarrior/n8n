@@ -16,9 +16,7 @@ export default async function RootLayout({
   return (
     <SidebarProvider defaultOpen={sidebarCollapsed}>
       <AppSidebar />
-      <SidebarInset className="items-center">
-        {children}
-      </SidebarInset>
+      <SidebarInset className="items-center">{children}</SidebarInset>
     </SidebarProvider>
   );
 }

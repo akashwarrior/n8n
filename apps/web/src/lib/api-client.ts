@@ -1,6 +1,6 @@
 import type { Projects, Workflows as PrismaWorkflows, Prisma } from "@n8n/db";
-import type { IntegrationType } from "@n8n/Integrations/types";
-import { WorkflowEdge, WorkflowNode } from "./workflow-store";
+import type { ProviderType } from "@n8n/actions/types";
+import { WorkflowEdge, WorkflowNode } from "@/store/workflow-store";
 
 class ApiError extends Error {
   public status: number;
@@ -22,19 +22,22 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => { });
+    const error = await response.json().catch(() => {});
     throw new ApiError(response.status, error.error || "Request failed");
   }
 
   return await response.json();
 }
 
-interface Workflows extends Omit<PrismaWorkflows, "nodes" | "edges"> {
+export interface Workflows extends Omit<PrismaWorkflows, "nodes" | "edges"> {
   nodes: WorkflowNode[];
   edges: WorkflowEdge[];
 }
 
-interface WorkflowCreateType extends Omit<Prisma.WorkflowsCreateInput, "project" | "nodes" | "edges"> {
+interface WorkflowCreateType extends Omit<
+  Prisma.WorkflowsCreateInput,
+  "project" | "nodes" | "edges"
+> {
   name: string;
   nodes: WorkflowNode[];
   edges: WorkflowEdge[];
@@ -87,7 +90,7 @@ const project = {
 };
 
 export interface Credentials extends Prisma.CredentialsModel {
-  type: IntegrationType;
+  type: ProviderType;
   config: Record<string, string>;
 }
 
@@ -110,15 +113,19 @@ const credential = {
       method: "PUT",
       body: JSON.stringify(data),
     }),
-  delete: (data: { credentialsId: string }) =>
-    apiCall<Credentials>(`/api/credentials/${data.credentialsId}`, {
+  delete: (data: { credentialId: string }) =>
+    apiCall<Credentials>(`/api/credentials/${data.credentialId}`, {
       method: "DELETE",
     }),
 
-  getAll: (data: { projectId: string }) =>
-    apiCall<Credentials[]>(`/api/credentials?projectId=${data.projectId}`, {
-      method: "GET",
-    }),
+  getAll: (data: { projectId: string; type?: ProviderType }) =>
+    apiCall<Credentials[]>(
+      `/api/credentials?projectId=${data.projectId}` +
+        (data.type ? `&type=${data.type}` : ""),
+      {
+        method: "GET",
+      },
+    ),
 };
 
 export const api = {

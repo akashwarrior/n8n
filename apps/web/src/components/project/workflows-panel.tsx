@@ -14,6 +14,7 @@ import { ItemCard } from "./item-card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ProjectWrapper } from "./project-wrapper";
+import Link from "next/link";
 
 type WorkflowsPanelProps = {
   projectId: string | null;
@@ -147,20 +148,28 @@ export function WorkflowsPanel({ projectId }: WorkflowsPanelProps) {
       onRename={handleRename}
     >
       {currentPageItems.map((workflow) => (
-        <ItemCard
+        <Link
           key={workflow.id}
-          title={workflow.name}
-          projectId={workflow.project.id}
-          projectName={workflow.project.name}
-          onOpen={() => handleOpen(workflow.id)}
-          onRename={() => setRenameState(workflow)}
-          onDelete={() => handleDelete(workflow.id)}
-          status={<WorkflowStatus workflow={workflow} />}
-          description={[
-            `Last updated ${intlFormatDistance(new Date(workflow.updatedAt), new Date())}`,
-            `Created ${intlFormat(new Date(workflow.createdAt), { month: "long", day: "2-digit" })}`,
-          ]}
-        />
+          prefetch={false}
+          href={`/workflows/${workflow.id}`}
+        >
+          <ItemCard
+            title={workflow.name}
+            projectName={workflow.project.name}
+            onOpen={() => handleOpen(workflow.id)}
+            onRename={() => setRenameState(workflow)}
+            onDelete={() => handleDelete(workflow.id)}
+            openProject={(e) => {
+              e.preventDefault();
+              router.push(`/projects/${workflow.project.id}`);
+            }}
+            status={<WorkflowStatus workflow={workflow} />}
+            description={[
+              `Last updated ${intlFormatDistance(new Date(workflow.updatedAt), new Date())}`,
+              `Created ${intlFormat(new Date(workflow.createdAt), { month: "long", day: "2-digit" })}`,
+            ]}
+          />
+        </Link>
       ))}
     </ProjectWrapper>
   );
