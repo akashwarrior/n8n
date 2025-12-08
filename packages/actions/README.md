@@ -13,11 +13,11 @@ This package exports a collection of **Providers**, each containing:
 
 ## Available Providers
 
-| Provider   | Description                                      |
-| ---------- | ------------------------------------------------ |
-| `triggers` | Trigger-based actions for starting workflows     |
-| `resend`   | Email sending capabilities via Resend API        |
-| `system`   | System-level actions and utilities               |
+| Provider   | Description                                  |
+| ---------- | -------------------------------------------- |
+| `triggers` | Trigger-based actions for starting workflows |
+| `resend`   | Email sending capabilities via Resend API    |
+| `system`   | System-level actions and utilities           |
 
 ## Installation
 
@@ -45,9 +45,9 @@ PROVIDERS.forEach((provider) => {
 
 ## Exports
 
-| Export           | Description                                  |
-| ---------------- | -------------------------------------------- |
-| `PROVIDERS`      | Array of all available action providers      |
-| `Provider`       | TypeScript type for a provider definition    |
+| Export              | Description                                     |
+| ------------------- | ----------------------------------------------- |
+| `PROVIDERS`         | Array of all available action providers         |
+| `Provider`          | TypeScript type for a provider definition       |
 | `ActionConfigField` | TypeScript type for action configuration fields |
-| `ProviderType`   | Union type of available provider types       |
+| `ProviderType`      | Union type of available provider types          |

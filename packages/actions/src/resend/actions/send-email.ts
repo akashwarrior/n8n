@@ -62,7 +62,6 @@ export async function sendEmail(
   }
 }
 
-
 export const sendEmailConfig: ActionConfigField[] = [
   {
     name: "emailTo",

@@ -4,7 +4,7 @@ import { createElement } from "react";
 import { scheduleConfig } from "./actions/schedule";
 import { webhookConfig } from "./actions/webhook";
 
-const none = () => { };
+const none = () => {};
 
 export const triggers: Provider = {
   type: "triggers",

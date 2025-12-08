@@ -4,15 +4,15 @@ export type ActionConfigField = {
   name: string;
   label: string;
   type:
-  | "text"
-  | "textarea"
-  | "select"
-  | "code"
-  | "json"
-  | "number"
-  | "checkbox"
-  | "timezone"
-  | "display";
+    | "text"
+    | "textarea"
+    | "select"
+    | "code"
+    | "json"
+    | "number"
+    | "checkbox"
+    | "timezone"
+    | "display";
   required?: boolean;
   placeholder?: string;
   description?: string;
@@ -27,10 +27,10 @@ export type Provider = {
   description: string;
   requireCredential: boolean;
   icon:
-  | React.ComponentType<{ className?: string }>
-  | (Record<string, React.ComponentType<{ className?: string }>> & {
-    default: React.ComponentType<{ className?: string }>;
-  });
+    | React.ComponentType<{ className?: string }>
+    | (Record<string, React.ComponentType<{ className?: string }>> & {
+        default: React.ComponentType<{ className?: string }>;
+      });
 
   // Form fields for the credentials dialog
   formFields: Array<{
