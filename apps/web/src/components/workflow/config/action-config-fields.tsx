@@ -10,7 +10,6 @@ import { TimezoneSelect } from "@/components/ui/timezone-select";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { PROVIDERS } from "@n8n/actions";
-import { ActionField } from "@n8n/actions/types";
 import { CopyIcon } from "lucide-react";
 import {
   Select,
@@ -19,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ActionConfigField } from "@n8n/actions/types";
 
 type ConfigListProps = {
   config: Record<string, unknown>;
@@ -34,7 +34,7 @@ const InputField = ({
   onChange,
   disabled,
 }: {
-  field: ActionField;
+  field: ActionConfigField;
   value: any;
   onChange: (value: any) => void;
   disabled: boolean;
@@ -189,7 +189,7 @@ export function ActionConfigFields({
 
   return (
     <>
-      {actionDefinition.inputs.map((field) => (
+      {actionDefinition.config.map((field) => (
         <div key={field.name} className="space-y-2">
           {field.type !== "checkbox" && (
             <Label htmlFor={field.name} className="ml-1">
