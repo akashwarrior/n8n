@@ -9,6 +9,7 @@ import { Controls } from "@/components/ai-elements/controls";
 import { WorkflowToolbar } from "@/components/workflow/workflow-toolbar";
 import { nanoid } from "nanoid";
 import { Edge } from "../ai-elements/edge";
+import { AIPrompt } from "../ai-elements/prompt";
 import { ActionNode } from "./nodes/action-node";
 import {
   type ContextMenuState,
@@ -187,6 +188,8 @@ export function WorkflowCanvas({
           showZoom={true}
         />
       </Canvas>
+
+      <AIPrompt />
 
       <WorkflowContextMenu
         menuState={contextMenuState}

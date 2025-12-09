@@ -79,8 +79,6 @@ export function WorkflowToolbar() {
     if (hasUnsavedChanges) {
       await autosave({ immediate: true });
     }
-
-    await executeWorkflow();
     setIsExecuting(true);
     toast.info("Not implemented :)");
     setTimeout(() => {
